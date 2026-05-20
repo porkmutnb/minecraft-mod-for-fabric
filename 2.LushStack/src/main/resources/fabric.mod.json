@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "lushstack",
+  "version": "${version}",
+  "name": "LushStack",
+  "description": "",
+  "authors": [],
+  "contact": {},
+  "license": "All-Rights-Reserved",
+  "icon": "assets/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-datagen": [
+      "org.chermew.lushstack.client.LushstackDataGenerator"
+    ],
+    "client": [
+      "org.chermew.lushstack.client.LushstackClient"
+    ],
+    "main": [
+      "org.chermew.lushstack.Lushstack"
+    ]
+  },
+  "mixins": [
+    "lushstack.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.2",
+    "fabric-api": "*",
+    "minecraft": "26.1.2"
+  }
+}

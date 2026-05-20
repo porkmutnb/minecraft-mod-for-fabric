@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "essential_hud",
+  "version": "${version}",
+  "name": "Essential Info HUD",
+  "description": "",
+  "authors": [],
+  "contact": {},
+  "license": "All-Rights-Reserved",
+  "icon": "assets/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-datagen": [
+      "org.chermew.essential_hud.client.EssentialHudDataGenerator"
+    ],
+    "client": [
+      "org.chermew.essential_hud.client.EssentialHudClient"
+    ],
+    "main": [
+      "org.chermew.essential_hud.EssentialHud"
+    ]
+  },
+  "mixins": [
+    "essential_hud.mixins.json",
+    {
+      "config": "essential_hud.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.2",
+    "fabric-api": "*",
+    "minecraft": "26.1.2"
+  }
+}

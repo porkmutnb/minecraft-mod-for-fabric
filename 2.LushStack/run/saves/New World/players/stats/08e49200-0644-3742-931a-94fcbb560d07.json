@@ -1,0 +1,20 @@
+{
+  "stats": {
+    "minecraft:custom": {
+      "minecraft:time_since_rest": 1769,
+      "minecraft:walk_one_cm": 9483,
+      "minecraft:total_world_time": 1847,
+      "minecraft:leave_game": 1,
+      "minecraft:play_time": 1769,
+      "minecraft:time_since_death": 1769,
+      "minecraft:drop": 233
+    },
+    "minecraft:dropped": {
+      "minecraft:iron_ingot": 296
+    },
+    "minecraft:picked_up": {
+      "minecraft:iron_ingot": 296
+    }
+  },
+  "DataVersion": 4790
+}

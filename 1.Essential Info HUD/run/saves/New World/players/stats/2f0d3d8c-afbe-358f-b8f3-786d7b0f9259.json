@@ -1,0 +1,25 @@
+{
+  "stats": {
+    "minecraft:killed": {
+      "minecraft:spider": 1
+    },
+    "minecraft:used": {
+      "minecraft:grass_block": 1
+    },
+    "minecraft:custom": {
+      "minecraft:time_since_rest": 1388,
+      "minecraft:walk_one_cm": 13975,
+      "minecraft:total_world_time": 1712,
+      "minecraft:leave_game": 1,
+      "minecraft:fly_one_cm": 141,
+      "minecraft:mob_kills": 1,
+      "minecraft:crouch_one_cm": 18,
+      "minecraft:sneak_time": 11,
+      "minecraft:play_time": 1388,
+      "minecraft:damage_dealt": 160,
+      "minecraft:jump": 6,
+      "minecraft:time_since_death": 1388
+    }
+  },
+  "DataVersion": 4790
+}

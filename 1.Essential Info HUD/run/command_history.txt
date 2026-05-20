@@ -1,0 +1,9 @@
+/give Player282 minecraft:clock
+/give Player427 minecraft:netherite_helmet
+/give Player427 minecraft:netherite_chestplate
+/give Player427 minecraft:netherite_
+/give Player427 minecraft:netherite_leggings
+/give Player427 minecraft:netherite_boots
+/time set minecraft:day
+/gamemode survival
+/time set minecraft:day

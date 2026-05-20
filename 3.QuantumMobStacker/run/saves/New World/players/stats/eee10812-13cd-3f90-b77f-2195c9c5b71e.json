@@ -1,0 +1,23 @@
+{
+  "stats": {
+    "minecraft:picked_up": {
+      "minecraft:white_wool": 7,
+      "minecraft:mutton": 11
+    },
+    "minecraft:used": {
+      "minecraft:grass_block": 1,
+      "minecraft:netherite_axe": 8
+    },
+    "minecraft:custom": {
+      "minecraft:time_since_rest": 2007,
+      "minecraft:walk_one_cm": 14428,
+      "minecraft:total_world_time": 2022,
+      "minecraft:leave_game": 1,
+      "minecraft:play_time": 2007,
+      "minecraft:damage_dealt": 0,
+      "minecraft:jump": 5,
+      "minecraft:time_since_death": 2007
+    }
+  },
+  "DataVersion": 4790
+}

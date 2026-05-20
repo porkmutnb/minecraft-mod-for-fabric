@@ -1,0 +1,22 @@
+{
+  "stats": {
+    "minecraft:used": {
+      "minecraft:oak_fence": 22
+    },
+    "minecraft:custom": {
+      "minecraft:sprint_one_cm": 2015,
+      "minecraft:time_since_rest": 2266,
+      "minecraft:walk_one_cm": 10712,
+      "minecraft:total_world_time": 2277,
+      "minecraft:leave_game": 1,
+      "minecraft:fly_one_cm": 7702,
+      "minecraft:crouch_one_cm": 26,
+      "minecraft:sneak_time": 56,
+      "minecraft:play_time": 2266,
+      "minecraft:climb_one_cm": 84,
+      "minecraft:jump": 13,
+      "minecraft:time_since_death": 2266
+    }
+  },
+  "DataVersion": 4790
+}

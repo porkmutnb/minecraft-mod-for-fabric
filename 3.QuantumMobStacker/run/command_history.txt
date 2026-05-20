@@ -1,0 +1,13 @@
+/seed
+/summon minecraft:sheep ~ ~ ~
+/clear
+/give Player142 minecraft:netherite_sword
+/give Player142 minecraft:netherite_axe
+/summon minecraft:sheep ~ ~ ~
+/summon minecraft:sheep ~ ~ ~ 10
+/summon minecraft:sheep ~ ~ ~
+/
+/summon minecraft:sheep ~ ~ ~
+/summon minecraft:sheep ~ ~ ~\
+/summon minecraft:sheep ~ ~ ~
+/give Player331 minecraft:command_block
