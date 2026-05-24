@@ -4,7 +4,8 @@
   "package": "org.chermew.quantum_mob_stacker.mixin",
   "compatibilityLevel": "JAVA_25",
   "mixins": [
-    "MobEntityMixin"
+    "MobEntityMixin",
+    "AnimalMixin"
   ],
   "injectors": {
     "defaultRequire": 1

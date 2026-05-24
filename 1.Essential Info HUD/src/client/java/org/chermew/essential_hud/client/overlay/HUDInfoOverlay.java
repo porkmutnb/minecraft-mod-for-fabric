@@ -15,7 +15,7 @@ public class HUDInfoOverlay implements HudElement {
 
         // --- [ ส่วนที่ 1: เตรียมพิกัดและสี ] ---
         int width = minecraft.getWindow().getGuiScaledWidth()-50;
-        int height = minecraft.getWindow().getGuiScaledHeight()-5;
+        int height = minecraft.getWindow().getGuiScaledHeight()-15;
         int centerX = width / 2;
 
         boolean isCreative = minecraft.player.isCreative();

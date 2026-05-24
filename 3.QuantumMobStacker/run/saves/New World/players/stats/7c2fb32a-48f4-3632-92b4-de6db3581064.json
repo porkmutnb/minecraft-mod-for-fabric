@@ -1,0 +1,39 @@
+{
+  "stats": {
+    "minecraft:custom": {
+      "minecraft:time_since_rest": 5129,
+      "minecraft:walk_one_cm": 20657,
+      "minecraft:total_world_time": 5897,
+      "minecraft:leave_game": 1,
+      "minecraft:mob_kills": 15,
+      "minecraft:crouch_one_cm": 10,
+      "minecraft:damage_dealt": 1360,
+      "minecraft:sneak_time": 126,
+      "minecraft:play_time": 5129,
+      "minecraft:jump": 7,
+      "minecraft:time_since_death": 5129,
+      "minecraft:animals_bred": 5
+    },
+    "minecraft:used": {
+      "minecraft:glow_item_frame": 6,
+      "minecraft:lever": 2,
+      "minecraft:stripped_oak_log": 2,
+      "minecraft:command_block": 2,
+      "minecraft:netherite_axe": 25
+    },
+    "minecraft:picked_up": {
+      "minecraft:porkchop": 13,
+      "minecraft:white_wool": 8,
+      "minecraft:mutton": 10,
+      "minecraft:leather": 2,
+      "minecraft:gray_wool": 1,
+      "minecraft:beef": 14
+    },
+    "minecraft:killed": {
+      "minecraft:pig": 4,
+      "minecraft:sheep": 7,
+      "minecraft:cow": 4
+    }
+  },
+  "DataVersion": 4790
+}

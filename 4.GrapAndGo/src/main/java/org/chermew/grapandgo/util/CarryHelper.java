@@ -1,44 +1,35 @@
 package org.chermew.grapandgo.util;
 
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
-import org.chermew.grapandgo.common.GrapData;
+import net.minecraft.world.entity.LivingEntity;
+import org.chermew.grapandgo.common.registry.ModStatusEffects;
 import org.chermew.grapandgo.network.CarrySyncPayload;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
 public class CarryHelper {
-
-    // ⭐ กระเป๋าโดเรม่อนชั่วคราวของน้องแป้ง!
-    // เอาไว้เก็บข้อมูล GrapData แยกตามตัวผู้เล่น (ใช้ UUID) จะได้เทสระบบได้ทันทีค่ะ
-    private static final Map<UUID, GrapData> CARRYING_DATA = new HashMap<>();
 
     /**
      * เมธอดสำหรับเริ่มการอุ้ม (Grab)
      */
     public static void tryGrabEntity(ServerPlayer player, int entityId) {
-        // หาตัว Entity จาก ID ที่ส่งมาจาก Client
         Entity target = player.level().getEntity(entityId);
 
-        if (target != null && target != player) {
-            // 1. สร้าง Data เก็บ NBT ของม็อบไว้
-            GrapData data = new GrapData(target);
+        if (target != null && target != player && target instanceof LivingEntity livingTarget) {
+            // 1. ใส่ MobEffect "Grab/Lift" ให้ Player แบบถาวร (ไม่มีวันหมดอายุจนกว่าจะเอาลง)
+            player.addEffect(new MobEffectInstance(
+                    BuiltInRegistries.MOB_EFFECT.wrapAsHolder(ModStatusEffects.GRAB_EFFECT),
+                    MobEffectInstance.INFINITE_DURATION
+            ));
 
-            // ⭐ เก็บข้อมูลลง Map ชั่วคราวแทนการใช้ Attachment
-            CARRYING_DATA.put(player.getUUID(), data);
+            // 2. ให้ม็อบเป้าหมายมาขี่ผู้เล่น (ขึ้นมือ/ขึ้นหัว)
+            livingTarget.startRiding(player);
 
-            // 3. ลบ Entity ตัวจริงออกจากโลก (หายตัวไปแล้ว!)
-            target.discard();
+            player.sendSystemMessage(Component.literal("พี่ปออุ้ม " + livingTarget.getName().getString() + " ขึ้นมาแล้วจ้า!"));
 
-            player.sendSystemMessage(net.minecraft.network.chat.Component.literal("พี่ปออุ้ม " + target.getName().getString() + " เข้ากระเป๋าแล้วจ้า!"));
-
-            // 4. ส่ง Packet บอก Client ให้วาด Entity และเปลี่ยนท่าทางแขน
+            // 3. ส่ง Packet บอก Client ให้วาด Entity และเปลี่ยนท่าทางแขน
             sendSyncPacket(player, true);
         }
     }
@@ -47,41 +38,41 @@ public class CarryHelper {
      * เมธอดสำหรับปล่อย (Drop)
      */
     public static void tryDropEntity(ServerPlayer player) {
-        // 1. ดึงข้อมูล GrapData ออกมาจากกระเป๋า
-        GrapData data = CARRYING_DATA.get(player.getUUID());
+        if (player.hasEffect(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(ModStatusEffects.GRAB_EFFECT))) {
+            // 1. เคลียร์สถานะยกของออก
+            player.removeEffect(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(ModStatusEffects.GRAB_EFFECT));
 
-        // พอเราเปิดใช้ data แล้ว ตรงนี้ก็จะไม่ Error แล้วค่ะ!
-        if (data != null && data.getEntityData() != null) {
-            CompoundTag nbt = data.getEntityData();
+            boolean droppedAny = false;
+            // 2. ปลดผู้โดยสารทุกคนลง (ปกติมีตัวเดียว)
+            for (Entity passenger : player.getPassengers()) {
+                passenger.stopRiding();
 
-            double x = player.getX() + player.getLookAngle().x * 1.5;
-            double y = player.getY();
-            double z = player.getZ() + player.getLookAngle().z * 1.5;
+                // คำนวณตำแหน่งสำหรับวางข้างหน้าผู้เล่น
+                double yawRad = Math.toRadians(player.getYRot());
+                double x = player.getX() - Math.sin(yawRad) * 1.5;
+                double y = player.getY();
+                double z = player.getZ() + Math.cos(yawRad) * 1.5;
 
-            // 2. ใช้ player.level() แทน และระบุชนิด (Entity entity) ให้ชัดเจน ป้องกัน Java งง
-            Entity restoredEntity = EntityType.loadEntityRecursive(nbt, player.level(), EntitySpawnReason.LOAD, (entity) -> {
-                entity.absSnapTo(x, y, z, player.getYRot(), player.getXRot());
-                return entity;
-            });
-
-            if (restoredEntity != null) {
-                player.level().addFreshEntity(restoredEntity);
-
-                // 3. วางแล้วก็ต้องเคลียร์กระเป๋าด้วยน้า
-                CARRYING_DATA.remove(player.getUUID());
-
-                player.sendSystemMessage(Component.literal("พี่ปอวาง " + restoredEntity.getName().getString() + " ลงพื้นแล้วค่ะ!"));
-
-                // ส่ง Packet บอก Client ว่าเราไม่ได้อุ้มอะไรแล้ว
-                sendSyncPacket(player, false);
+                // วางบนพื้นในทิศที่มอง
+                passenger.absSnapTo(x, y, z, player.getYRot(), player.getXRot());
+                
+                player.sendSystemMessage(Component.literal("พี่ปอวาง " + passenger.getName().getString() + " ลงพื้นแล้วค่ะ!"));
+                droppedAny = true;
             }
+
+            if (!droppedAny) {
+                player.sendSystemMessage(Component.literal("พี่ปอวางเสร็จสิ้นแล้วค่ะ!"));
+            }
+
+            // 3. ส่ง Packet บอก Client ว่าเราไม่ได้อุ้มอะไรแล้ว
+            sendSyncPacket(player, false);
         } else {
             player.sendSystemMessage(Component.literal("ในมือพี่ปอว่างเปล่า... จะวางอะไรเอ่ย?"));
         }
     }
 
     public static boolean isCarrying(ServerPlayer player) {
-        return CARRYING_DATA.containsKey(player.getUUID());
+        return player.hasEffect(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(ModStatusEffects.GRAB_EFFECT));
     }
 
     public static void sendSyncPacket(ServerPlayer player, boolean isCarrying) {
@@ -90,7 +81,7 @@ public class CarryHelper {
         net.fabricmc.fabric.api.networking.v1.PlayerLookup.tracking(player).forEach(p ->
                 net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(p, payload)
         );
-        // ส่งให้ตัวเองเห็นด้วย (สำคัญมาก!)
+        // ส่งให้ตัวเองเห็นด้วย
         net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(player, payload);
     }
 }

@@ -7,6 +7,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -25,6 +26,9 @@ public abstract class MobEntityMixin implements IStackableMob {
 
     @Unique
     private long stackCount = 1;
+
+    @Unique
+    private boolean quantum_mob_stacker$isBreeding = false;
 
     /**
      * Creates an invoker to call the protected method dropCustomDeathLoot.
@@ -75,20 +79,60 @@ public abstract class MobEntityMixin implements IStackableMob {
         quantum_mob_stacker$updateCustomName();
     }
 
+    @Override
+    public boolean quantum_mob_stacker$isBreeding() {
+        return this.quantum_mob_stacker$isBreeding;
+    }
+
+    @Override
+    public void quantum_mob_stacker$setBreeding(boolean breeding) {
+        this.quantum_mob_stacker$isBreeding = breeding;
+    }
+
     @Inject(method = "tick", at = @At("TAIL"))
     private void quantum_mob_stacker$doStacking(CallbackInfo ci) {
         LivingEntity self = self();
-        if (self instanceof Mob && !self.level().isClientSide() && self.tickCount % 20 == 0) {
+        if (self instanceof Mob && !self.level().isClientSide() && self.tickCount % 10 == 0) {
+            if (((IStackableMob) self).quantum_mob_stacker$isBreeding() || self.isBaby() || (self instanceof Animal animal && animal.isInLove())) {
+                return;
+            }
             double radius = 8.0;
             List<Mob> nearby = self.level().getEntitiesOfClass(Mob.class,
                     self.getBoundingBox().inflate(radius),
-                    e -> e.getType() == self.getType() && e != self && e.isAlive() && ((IStackableMob)e).getStackCount() > 0);
+                    (Mob e) -> { // ระบุ Type ให้ชัดในวงเล็บแบบนี้ค่ะ
+                        return e.getType() == self.getType()
+                                && e != self
+                                && e.isAlive()
+                                && ((IStackableMob)e).getStackCount() > 0
+                                && !((IStackableMob)e).quantum_mob_stacker$isBreeding()
+                                && (e instanceof net.minecraft.world.entity.animal.Animal animal && !animal.isBaby())
+                                ;
+                    });
 
             if (!nearby.isEmpty()) {
                 for (Mob other : nearby) {
                     IStackableMob otherStack = (IStackableMob) other;
                     this.addStack(otherStack.getStackCount());
                     other.discard();
+                }
+            }
+        }
+    }
+
+    @Inject(method = "tick", at = @At("TAIL"))
+    private void quantum_mob_stacker$checkBreedingStatus(CallbackInfo ci) {
+        LivingEntity self = self();
+        if (!self.level().isClientSide() && self instanceof Animal animal && self.tickCount % 20 == 0) {
+            if (this.quantum_mob_stacker$isBreeding()) {
+                if (animal.isInLove()) {
+                    // สถานะ: กำลังลั้นลา (ห้ามรวม Stack)
+                    this.quantum_mob_stacker$setBreeding(true);
+                } else if (animal.isBaby()) {
+                    // สถานะ: เป็นเด็ก (ห้ามรวม Stack)
+                    this.quantum_mob_stacker$setBreeding(true);
+                } else {
+                    // สถานะ: พร้อมกลับเข้ากลุ่ม!
+                    this.quantum_mob_stacker$setBreeding(false);
                 }
             }
         }
@@ -110,6 +154,7 @@ public abstract class MobEntityMixin implements IStackableMob {
             
             self.level().broadcastEntityEvent(self, (byte)3);
             self.setHealth(self.getMaxHealth());
+            self.deathTime = 0;
             
             ci.cancel();
         }
@@ -119,6 +164,7 @@ public abstract class MobEntityMixin implements IStackableMob {
     private void quantum_mob_stacker$writeStackData(ValueOutput output, CallbackInfo ci) {
         if((Object)this instanceof Mob) {
             output.putLong("StackCount", this.getStackCount());
+            output.putBoolean("IsBreeding", this.quantum_mob_stacker$isBreeding());
         }
     }
 
@@ -126,6 +172,7 @@ public abstract class MobEntityMixin implements IStackableMob {
     private void quantum_mob_stacker$readStackNbt(ValueInput input, CallbackInfo ci) {
         if((Object)this instanceof Mob) {
             input.read("StackCount", Codec.LONG).ifPresent(this::setStackCount);
+            input.read("IsBreeding", Codec.BOOL).ifPresent(this::quantum_mob_stacker$setBreeding);
         }
     }
 }

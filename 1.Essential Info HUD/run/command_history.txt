@@ -7,3 +7,5 @@
 /time set minecraft:day
 /gamemode survival
 /time set minecraft:day
+/give Player167 minecraft:netherite_sword
+/give Player167 minecraft:netherite_axe

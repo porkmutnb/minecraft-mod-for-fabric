@@ -11,3 +11,24 @@
 /summon minecraft:sheep ~ ~ ~\
 /summon minecraft:sheep ~ ~ ~
 /give Player331 minecraft:command_block
+/kill @e[type=minecraft:sheep]
+/
+/kill @e[type=minecraft:sheep]
+/give Player605 minecraft:command_block
+/summon minecraft:sheep ~ ~ ~
+/give Player168 minecraft:command_block
+/give Player608 minecraft:command_block
+/gamerule doDaylightCycle false
+/gamerule advance_time true
+/summon minecraft:sheep ~ ~ ~ 2
+/summon minecraft:sheep ~ ~ ~
+/summon minecraft:iron_golem
+/summon minecraft:sheep ~ ~ ~
+/time set minecraft:midnight
+/time set minecraft:noon
+/time set minecraft:midnight
+/time set minecraft:noon
+/time set minecraft:midnight
+/time set minecraft:noon
+/summon minecraft:sheep ~ ~ ~
+/time set minecraft:noon

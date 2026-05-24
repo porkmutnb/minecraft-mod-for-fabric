@@ -1,0 +1,27 @@
+{
+  "stats": {
+    "minecraft:killed": {
+      "minecraft:sheep": 2
+    },
+    "minecraft:used": {
+      "minecraft:netherite_sword": 29,
+      "minecraft:netherite_axe": 2
+    },
+    "minecraft:custom": {
+      "minecraft:time_since_rest": 2904,
+      "minecraft:walk_one_cm": 5859,
+      "minecraft:total_world_time": 2913,
+      "minecraft:leave_game": 1,
+      "minecraft:mob_kills": 2,
+      "minecraft:play_time": 2904,
+      "minecraft:damage_dealt": 160,
+      "minecraft:jump": 6,
+      "minecraft:time_since_death": 2904
+    },
+    "minecraft:picked_up": {
+      "minecraft:white_wool": 7,
+      "minecraft:mutton": 10
+    }
+  },
+  "DataVersion": 4790
+}

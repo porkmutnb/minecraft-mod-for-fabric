@@ -1,0 +1,22 @@
+{
+  "stats": {
+    "minecraft:custom": {
+      "minecraft:time_since_rest": 2353,
+      "minecraft:walk_one_cm": 18240,
+      "minecraft:total_world_time": 2791,
+      "minecraft:leave_game": 1,
+      "minecraft:play_time": 2353,
+      "minecraft:jump": 2,
+      "minecraft:time_since_death": 2353
+    },
+    "minecraft:picked_up": {
+      "minecraft:string": 1,
+      "minecraft:slime_ball": 35,
+      "minecraft:rotten_flesh": 2
+    },
+    "minecraft:used": {
+      "minecraft:cooked_beef": 1
+    }
+  },
+  "DataVersion": 4790
+}
