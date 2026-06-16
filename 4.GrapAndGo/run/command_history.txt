@@ -1,5 +1,0 @@
-/summon minecraft:sheep ~ ~ ~
-/summon minecraft:cow ~ ~ ~
-/summon minecraft:pig ~ ~ ~
-/give Player813 minecraft:chest
-/summon minecraft:villager ~ ~ ~

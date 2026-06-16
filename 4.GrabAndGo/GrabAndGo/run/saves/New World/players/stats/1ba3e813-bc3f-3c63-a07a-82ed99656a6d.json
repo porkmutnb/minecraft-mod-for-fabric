@@ -1,0 +1,22 @@
+{
+  "stats": {
+    "minecraft:picked_up": {
+      "minecraft:blue_egg": 2
+    },
+    "minecraft:custom": {
+      "minecraft:interact_with_furnace": 1,
+      "minecraft:time_since_rest": 2507,
+      "minecraft:interact_with_smoker": 1,
+      "minecraft:walk_one_cm": 10519,
+      "minecraft:total_world_time": 2554,
+      "minecraft:leave_game": 1,
+      "minecraft:crouch_one_cm": 125,
+      "minecraft:sneak_time": 220,
+      "minecraft:play_time": 2507,
+      "minecraft:climb_one_cm": 414,
+      "minecraft:jump": 4,
+      "minecraft:time_since_death": 2507
+    }
+  },
+  "DataVersion": 4790
+}

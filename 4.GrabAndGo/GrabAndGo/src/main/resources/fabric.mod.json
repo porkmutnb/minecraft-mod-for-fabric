@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "grapandgo",
+  "version": "${version}",
+  "name": "GrapAndGo",
+  "description": "",
+  "authors": [],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-datagen": [
+      "org.chermew.grabandgo.client.GrabandgoDataGenerator"
+    ],
+    "client": [
+      "org.chermew.grabandgo.client.GrabandgoClient"
+    ],
+    "main": [
+      "org.chermew.grabandgo.Grabandgo"
+    ]
+  },
+  "mixins": [
+    "grabandgo.mixins.json",
+    {
+      "config": "grabandgo.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.2",
+    "fabric-api": "*",
+    "minecraft": "26.1.2"
+  }
+}
