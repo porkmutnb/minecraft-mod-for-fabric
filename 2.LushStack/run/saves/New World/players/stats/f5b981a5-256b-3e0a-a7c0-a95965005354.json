@@ -1,0 +1,24 @@
+{
+  "stats": {
+    "minecraft:custom": {
+      "minecraft:time_since_rest": 1749,
+      "minecraft:walk_one_cm": 29504,
+      "minecraft:total_world_time": 1767,
+      "minecraft:leave_game": 1,
+      "minecraft:play_time": 1749,
+      "minecraft:time_since_death": 1749,
+      "minecraft:drop": 638
+    },
+    "minecraft:dropped": {
+      "minecraft:iron_ingot": 64,
+      "minecraft:lapis_lazuli": 67,
+      "minecraft:copper_ingot": 74,
+      "minecraft:redstone": 172,
+      "minecraft:gold_ingot": 64,
+      "minecraft:diamond": 64,
+      "minecraft:netherite_ingot": 64,
+      "minecraft:emerald": 69
+    }
+  },
+  "DataVersion": 4903
+}

@@ -20,10 +20,7 @@ import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.AgeableMob;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.npc.villager.AbstractVillager;
 import net.minecraft.world.entity.player.Player;
@@ -319,7 +316,8 @@ public class GrabHandler {
             
             // Modern 1.26.2 EntityType.create from NBT utilizes ValueInput and EntitySpawnReason
             ValueInput valueInput = TagValueInput.create(new ProblemReporter.Collector(), world.registryAccess(), entityNbt);
-            Optional<Entity> entityOpt = EntityType.create(valueInput, world, EntitySpawnReason.LOAD);
+            EntitySpawnRequest request = new EntitySpawnRequest(EntitySpawnReason.LOAD, false);
+            Optional<Entity> entityOpt = EntityType.create(valueInput, world, request);
 
             if (entityOpt.isPresent()) {
                 Entity entity = entityOpt.get();
@@ -346,7 +344,7 @@ public class GrabHandler {
             try {
                 Identifier typeId = Identifier.tryParse(entityTypeIdStr);
                 EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.getValue(typeId);
-                Entity entity = type.create(world, EntitySpawnReason.COMMAND);
+                Entity entity = type.create(world, new EntitySpawnRequest(EntitySpawnReason.LOAD, false));
                 if (entity != null) {
                     entity.setPos(placePos.getX() + 0.5, placePos.getY() + 0.05, placePos.getZ() + 0.5);
                     world.addFreshEntity(entity);

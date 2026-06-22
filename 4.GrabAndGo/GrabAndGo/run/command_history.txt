@@ -6,3 +6,6 @@
 /give Player144 minecraft:redstone 64
 /give Player144 minecraft:emerald 64
 /give Player144 minecraft:lapis_lazuli 64
+/summon minecraft:pig ~ ~ ~ 2
+/summon minecraft:pig ~ ~ ~
+/summon minecraft:cow ~ ~ ~

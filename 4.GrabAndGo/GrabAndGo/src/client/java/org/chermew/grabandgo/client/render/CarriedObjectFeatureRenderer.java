@@ -24,6 +24,15 @@ import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.animal.chicken.Chicken;
+import net.minecraft.world.entity.animal.cow.Cow;
+import net.minecraft.world.entity.animal.feline.Cat;
+import net.minecraft.world.entity.animal.pig.Pig;
+import net.minecraft.world.entity.animal.rabbit.Rabbit;
+import net.minecraft.world.entity.animal.sheep.Sheep;
+import net.minecraft.world.entity.animal.wolf.Wolf;
+import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.TagValueInput;
@@ -78,17 +87,18 @@ public class CarriedObjectFeatureRenderer extends RenderLayer<AvatarRenderState,
         String type = carriedData.getStringOr("Type", "");
         
         poseStack.pushPose();
-        
-        // Translate and position the carried object in front of the player's chest/arms
-        poseStack.translate(0.0F, 0.9F, -0.45F);
-        
-        if ("block".equals(type)) {
-            renderBlock(poseStack, submitNodeCollector, lightCoords, state.id, state.outlineColor, carriedData);
-        } else if ("entity".equals(type)) {
-            renderEntity(poseStack, submitNodeCollector, lightCoords, carriedData, player);
+        try {
+            // Translate and position the carried object in front of the player's chest/arms
+            poseStack.translate(0.0F, 0.9F, -0.45F);
+            
+            if ("block".equals(type)) {
+                renderBlock(poseStack, submitNodeCollector, lightCoords, state.id, state.outlineColor, carriedData);
+            } else if ("entity".equals(type)) {
+                renderEntity(poseStack, submitNodeCollector, lightCoords, carriedData, player);
+            }
+        } finally {
+            poseStack.popPose();
         }
-        
-        poseStack.popPose();
     }
 
     public static void renderCarriedObject(PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int lightCoords, CompoundTag carriedData, Entity player, int outlineColor) {
@@ -128,19 +138,21 @@ public class CarriedObjectFeatureRenderer extends RenderLayer<AvatarRenderState,
             }
 
             poseStack.pushPose();
-            // Scale block so it doesn't completely block player's view
-            poseStack.scale(0.65F, 0.65F, 0.65F);
-            // Center block pivot point
-            poseStack.translate(-0.5F, -0.5F, -0.5F);
+            try {
+                // Scale block so it doesn't completely block player's view
+                poseStack.scale(0.65F, 0.65F, 0.65F);
+                // Center block pivot point
+                poseStack.translate(-0.5F, -0.5F, -0.5F);
 
-            // Populate/Update BlockModelRenderState
-            BlockModelRenderState renderState = blockStateCache.computeIfAbsent(playerId, id -> new BlockModelRenderState());
-            getBlockModelResolver().update(renderState, blockState, BLOCK_DISPLAY_CONTEXT);
+                // Populate/Update BlockModelRenderState
+                BlockModelRenderState renderState = blockStateCache.computeIfAbsent(playerId, id -> new BlockModelRenderState());
+                getBlockModelResolver().update(renderState, blockState, BLOCK_DISPLAY_CONTEXT);
 
-            // Submit block render commands
-            renderState.submit(poseStack, submitNodeCollector, lightCoords, OverlayTexture.NO_OVERLAY, outlineColor);
-
-            poseStack.popPose();
+                // Submit block render commands
+                renderState.submit(poseStack, submitNodeCollector, lightCoords, OverlayTexture.NO_OVERLAY, outlineColor);
+            } finally {
+                poseStack.popPose();
+            }
         } catch (Exception e) {
             LOGGER.error("Failed to render carried block", e);
         }
@@ -155,18 +167,22 @@ public class CarriedObjectFeatureRenderer extends RenderLayer<AvatarRenderState,
             if (typeIdStr.isEmpty()) return;
 
             // Compute and cache dummy entity client-side
-            Entity dummy = dummyEntityCache.computeIfAbsent(typeIdStr, idStr -> {
+            Entity dummy = dummyEntityCache.get(typeIdStr);
+            if (dummy == null || dummy.level() != client.level) {
                 try {
-                    Identifier id = Identifier.tryParse(idStr);
+                    Identifier id = Identifier.tryParse(typeIdStr);
                     EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(id)
                         .map(ref -> ref.value())
                         .orElse(null);
-                    return type != null ? type.create(client.level, EntitySpawnReason.LOAD) : null;
+                    dummy = type != null ? type.create(client.level, EntitySpawnReason.LOAD) : null;
+                    if (dummy != null) {
+                        dummyEntityCache.put(typeIdStr, dummy);
+                    }
                 } catch (Exception e) {
-                    LOGGER.error("Failed to create dummy client entity: {}", idStr, e);
-                    return null;
+                    LOGGER.error("Failed to create dummy client entity: {}", typeIdStr, e);
+                    dummy = null;
                 }
-            });
+            }
 
             if (dummy == null) return;
 
@@ -179,14 +195,23 @@ public class CarriedObjectFeatureRenderer extends RenderLayer<AvatarRenderState,
                         ValueInput valueInput = TagValueInput.create(new ProblemReporter.Collector(), client.level.registryAccess(), entityNbt);
                         dummy.load(valueInput);
                     }
-                    
-                    // Force disable entity ticking values for rendering stability
-                    dummy.tickCount = 0;
-                    dummy.setPos(dummy.getX(), dummy.getY(), dummy.getZ());
                 } catch (Exception nbtEx) {
                     // Fallback to default state if NBT loading fails for this frame
                 }
             }
+
+            // Force ensure visibility
+            dummy.setInvisible(false);
+
+            // Sync positions with player to avoid culling and light issues
+            dummy.tickCount = player.tickCount;
+            dummy.setPos(player.getX(), player.getY(), player.getZ());
+            dummy.xo = player.xo;
+            dummy.yo = player.yo;
+            dummy.zo = player.zo;
+            dummy.xOld = player.getX();
+            dummy.yOld = player.getY();
+            dummy.zOld = player.getZ();
 
             // Sync dummy entity's rotations with the player's view direction
             // In first person, this keeps the mob facing the correct direction relative to the camera as the player rotates.
@@ -210,41 +235,57 @@ public class CarriedObjectFeatureRenderer extends RenderLayer<AvatarRenderState,
             }
 
             poseStack.pushPose();
-            
-            // Adjust scaling depending on size of entity
-            float scale = 0.5F;
-            float heightOffset = 0.0F;
-            
-            // Customize dimensions for certain common mobs to make them fit nicely
-            EntityType<?> type = dummy.getType();
-            if (type == EntityType.CHICKEN || type == EntityType.RABBIT || type == EntityType.CAT || type == EntityType.WOLF) {
-                scale = 0.6F;
-            } else if (type == EntityType.COW || type == EntityType.SHEEP || type == EntityType.PIG) {
-                scale = 0.45F;
-            } else if (type == EntityType.VILLAGER) {
-                scale = 0.4F;
-                heightOffset = -0.5F; // lower villager model slightly
+            try {
+                // Adjust scaling depending on size of entity
+                float scale = 0.5F;
+                float heightOffset = 0.0F;
+                
+                // Customize dimensions for certain common mobs to make them fit nicely
+                EntityType<?> type = dummy.getType();
+                EntityType<Chicken> chicken = EntityTypes.CHICKEN;
+                EntityType<Rabbit> rabbit = EntityTypes.RABBIT;
+                EntityType<Cat> cat = EntityTypes.CAT;
+                EntityType<Wolf> wolf = EntityTypes.WOLF;
+                EntityType<Cow> cow = EntityTypes.COW;
+                EntityType<Sheep> sheep = EntityTypes.SHEEP;
+                EntityType<Pig> pig = EntityTypes.PIG;
+                EntityType<Villager> villager = EntityTypes.VILLAGER;
+                if (type == chicken || type == rabbit || type == cat || type == wolf) {
+                    scale = 0.6F;
+                } else if (type == cow || type == sheep || type == pig) {
+                    scale = 0.45F;
+                } else if (type == villager) {
+                    scale = 0.4F;
+                    heightOffset = -0.5F; // lower villager model slightly
+                }
+
+                // Flip Y and Z axes to correct upside-down rendering and face the player
+                // Y is flipped because player model space has positive Y pointing down, whereas world space has positive Y pointing up.
+                // Z is flipped because the local front of standard entities is negative Z, so flipping Z points them towards the camera.
+                poseStack.scale(scale, -scale, -scale);
+                poseStack.translate(0.0F, -heightOffset, 0.0F); // Invert heightOffset sign because Y is flipped
+
+                // Extract partialTick / gameTimeDeltaTicks
+                float partialTick = client.getDeltaTracker().getGameTimeDeltaTicks();
+
+                // Extract the EntityRenderState for the dummy entity
+                EntityRenderState entityState = client.getEntityRenderDispatcher().extractEntity(dummy, partialTick);
+
+                // Get the camera render state from the client's game render state safely (F5-safe check)
+                var gameRenderState = client.gameRenderer.gameRenderState();
+                if (gameRenderState != null && gameRenderState.levelRenderState != null && gameRenderState.levelRenderState.cameraRenderState != null) {
+                    CameraRenderState cameraState = gameRenderState.levelRenderState.cameraRenderState;
+                    if (entityState != null) {
+                        // Submit entity render commands directly to the entity's renderer to bypass dispatcher culling
+                        net.minecraft.client.renderer.entity.EntityRenderer renderer = client.getEntityRenderDispatcher().getRenderer(entityState);
+                        if (renderer != null) {
+                            renderer.submit(entityState, poseStack, submitNodeCollector, cameraState);
+                        }
+                    }
+                }
+            } finally {
+                poseStack.popPose();
             }
-
-            // Flip Y and Z axes to correct upside-down rendering and face the player
-            // Y is flipped because player model space has positive Y pointing down, whereas world space has positive Y pointing up.
-            // Z is flipped because the local front of standard entities is negative Z, so flipping Z points them towards the camera.
-            poseStack.scale(scale, -scale, -scale);
-            poseStack.translate(0.0F, -heightOffset, 0.0F); // Invert heightOffset sign because Y is flipped
-
-            // Extract partialTick / gameTimeDeltaTicks
-            float partialTick = client.getDeltaTracker().getGameTimeDeltaTicks();
-
-            // Extract the EntityRenderState for the dummy entity
-            EntityRenderState entityState = client.getEntityRenderDispatcher().extractEntity(dummy, partialTick);
-
-            // Get the camera render state from the client's game render state
-            CameraRenderState cameraState = client.gameRenderer.getGameRenderState().levelRenderState.cameraRenderState;
-
-            // Submit entity render commands
-            client.getEntityRenderDispatcher().submit(entityState, cameraState, 0.0, 0.0, 0.0, poseStack, submitNodeCollector);
-
-            poseStack.popPose();
         } catch (Exception e) {
             LOGGER.error("Failed to render carried entity", e);
         }
